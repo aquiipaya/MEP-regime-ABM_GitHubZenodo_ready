@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+title: "MEP-regime ABM: Reproducible code and data for regime mapping of dissipation–persistence relations"
+message: "If you use this software or data, please cite it as below."
+authors:
+  - family-names: Itaya
+    given-names: Akihiko
+doi: 10.5281/zenodo.18502569
+repository-code: "https://github.com/aquiiipaya/MEP-regime-ABM_GitHubZenodo_ready"
+date-released: 2026-02-06
+keywords:
+  - agent-based model
+  - maximum entropy production
+  - reproducibility
+  - artificial life
+license: MIT
