@@ -1,0 +1,511 @@
+\documentclass[11pt]{article}
+
+% -------------------- packages --------------------
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{setspace}
+
+\usepackage[numbers,sort&compress]{natbib}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\onehalfspacing
+
+% -------------------- title --------------------
+\title{%
+Regime Mapping of MEP-like Dissipation--Persistence Relations\\
+in an Information-Using Artificial Life ABM with Information Cost
+}
+\author{Akihiko Itaya\\Independent Researcher}
+\date{}
+
+\begin{document}
+\maketitle
+
+% -------------------- abstract --------------------
+\begin{abstract}
+We study when a Maximal Entropy Production (MEP)-like association between dissipation and persistence advantage
+appears or fails in an agent-based model (ABM) with explicit information-processing cost.
+Agents adopt either a random policy or an informed policy that senses local gradients under noise and pays
+an energetic information cost. We quantify persistence advantage by the paired difference in restricted mean
+survival time ($\Delta$RMST) and dissipation-related activity by a paired dissipation proxy difference
+($\Delta\sigma$-proxy), both defined as informed minus random under matched stochastic conditions.
+By scanning environmental inflow at fixed cost and testing robustness across cost and noise, we identify four
+inflow regimes characterized by the joint sign structure of $(\Delta\sigma\text{-proxy}, \Delta\text{RMST})$:
+(i) a low-inflow trivial regime ($\Delta\sigma$-proxy$<0$, $\Delta$RMST$<0$),
+(ii) a regime where the MEP-like association fails: dissipation proxy increases without conferring persistence advantage
+($\Delta\sigma$-proxy$>0$, $\Delta$RMST$<0$),
+(iii) a bounded regime where dissipation proxy and persistence advantage align
+($\Delta\sigma$-proxy$>0$, $\Delta$RMST$>0$), and
+(iv) a high-inflow regime where the MEP-like association fails in the opposite direction: persistence advantage persists while dissipation proxy decreases
+($\Delta\sigma$-proxy$<0$, $\Delta$RMST$>0$).
+To address concerns about proxy arbitrariness, we additionally analyze an independent alternative energetic proxy,
+agent expenditure ($\Delta$AE), which excludes the field diffusion term and does not apply $T_0$ normalization;
+we show that key low-inflow regime boundaries are preserved under $\Delta$AE.
+Rather than providing a single counterexample, this study identifies both MEP-like and non-MEP-like regimes within the
+same model by continuous parameter scanning, yielding an explicit parameter map of where an MEP-like association is observed
+and where it fails in an information-using feedback system. Overall, increased dissipation is neither necessary nor sufficient
+for persistence advantage in this class of ABMs. Here ``MEP-like'' is used strictly as a phenomenological label for regime-level correlation,
+not as a thermodynamic maximizing principle.
+\end{abstract}
+
+% -------------------- introduction --------------------
+\section{Introduction}
+Links between entropy production, information use, and adaptation are discussed across nonequilibrium thermodynamics,
+complex systems, and artificial life. A recurring hypothesis is that successful strategies tend to generate higher dissipation,
+suggesting an MEP-like connection between energetic throughput and adaptive success. However, information-using agents typically
+implement feedback: sensing affects action, action changes experienced environments, and the value of information depends on
+environmental gradients. Under such feedback, increased energetic activity can arise without producing persistence advantage, and
+conversely persistence can improve via reduced action when information becomes uninformative.
+
+This paper provides a minimal ABM demonstration that the validity of an MEP-like association is parameter dependent. Rather than
+treating MEP as universally true or false, we explicitly map the inflow ranges where a dissipation-related observable and persistence advantage align and
+where they decouple. We do not test MEP as a maximizing principle; we map when an MEP-like correlation between a dissipation-related observable and persistence advantage emerges or fails under information-using feedback.
+
+This work contributes to complex-systems methodology by providing a regime map of when a dissipation--persistence correlation emerges or fails in an information-using feedback system under systematic parameter scanning.
+
+
+% -------------------- model --------------------
+\section{Model}
+Agents inhabit a 2D resource field on an $N\times N$ grid that receives a constant inflow at the center cell, undergoes diffusion,
+and may lose resource through boundary handling. Each agent has a position $(x,y)$, velocity $(v_x,v_y)$, and internal energy $E$.
+Agents consume local resource to increase $E$ and pay (i) a baseline maintenance cost and (ii) an additional information-processing cost
+if they use an informed policy. Agents die when $E\le 0$ and divide when $E$ exceeds a threshold, paying a division cost.
+
+The two policies are:
+\begin{itemize}
+  \item \textbf{Random:} stochastic drift without directional sensing.
+  \item \textbf{Informed:} estimates local gradients under sensing noise and accelerates along the perceived gradient, paying an information cost.
+\end{itemize}
+We compare matched populations (random vs informed) under the same environmental inflow and stochastic seeds.
+
+% -------------------- measures --------------------
+\section{Measures}
+
+\paragraph{Persistence advantage (paired $\Delta$RMST).}
+Persistence advantage is quantified by the paired difference in restricted mean survival time:
+\[
+\Delta \mathrm{RMST}(I) \;=\; \mathrm{RMST}_{\text{informed}}(I) \;-\; \mathrm{RMST}_{\text{random}}(I).
+\]
+Positive $\Delta$RMST indicates that informed agents persist longer on average within the observation window.
+We do not claim $\Delta$RMST constitutes evolutionary fitness in a genetic sense; rather, it is an ecological persistence metric
+that isolates survival consequences of fixed strategies under matched environments. Throughout, ``advantage'' refers to ecological
+persistence under fixed strategies rather than evolutionary selection with heredity.
+
+\paragraph{Operational dissipation proxy (paired $\Delta\sigma$-proxy).}
+We use an operational dissipation-related proxy capturing irreversible energetic throughput in the open agent--environment system as
+explicitly modeled in the simulator. We emphasize that this proxy is \emph{not} a thermodynamic entropy production rate; it is an
+operational observable assembled from model-defined nonnegative diffusion losses and explicit energetic expenditures at the agent interface.
+
+Let the resource field be $u_i(t)\ge 0$ on grid cells $i\in\Omega$ and agent internal energies be $E_a(t)$. Define a temperature-scale
+constant
+\[
+T_0=\max(10^{-9},T_{\rm bath}),
+\]
+where $T_{\rm bath}$ is the simulator parameter (\texttt{bathTemp}). The dissipation proxy is defined per time step by
+\[
+\sigma\text{-proxy}(t)=\sigma_{\rm diff}(t)+\sigma_{\rm act}(t).
+\]
+
+\textbf{(i) Diffusion proxy (nonnegative by construction).}
+With diffusion coefficient $\kappa$ (\texttt{diffusionKappa}) and time step $dt$, for each nearest-neighbor edge $\langle i,j\rangle$
+(on a 4-neighborhood) define $\Delta u_{ij}(t)=u_i(t)-u_j(t)$. The simulator accumulates
+\[
+\sigma_{\rm diff}(t)=\sum_{\langle i,j\rangle}\frac{\kappa\,(\Delta u_{ij}(t))^2\,dt}{T_0},
+\]
+which is nonnegative because it is a sum of squared differences.
+
+\textbf{(ii) Agent expenditure term.}
+The simulator defines the total explicit energetic expenditure at agents as
+\[
+Q_{\rm act}(t)=Q_{\rm maint}(t)+Q_{\rm info}(t)+Q_{\rm div}(t),
+\]
+and sets
+\[
+\sigma_{\rm act}(t)=\frac{Q_{\rm act}(t)}{T_0}.
+\]
+Therefore,
+\[
+\sigma\text{-proxy}(t)=\sigma_{\rm diff}(t)+\frac{Q_{\rm act}(t)}{T_0}.
+\]
+We report the paired difference
+\[
+\Delta \sigma\text{-proxy}(I)=\sigma\text{-proxy}_{\text{informed}}(I)-\sigma\text{-proxy}_{\text{random}}(I).
+\]
+Our claims concern the regime-level \emph{sign structure} of dissipation--persistence relations, not the precise physical value of entropy production.
+
+\paragraph{Alternative energetic proxy: agent expenditure (AE).}
+To address concerns about arbitrariness of $\sigma$-proxy, we also analyze an independent alternative proxy that excludes the diffusion term
+and does not apply $T_0$ normalization:
+\[
+\mathrm{AE}(t)=Q_{\rm maint}(t)+Q_{\rm info}(t)+Q_{\rm div}(t)=Q_{\rm act}(t),
+\]
+and we report
+\[
+\Delta \mathrm{AE}(I)=\mathrm{AE}_{\text{informed}}(I)-\mathrm{AE}_{\text{random}}(I).
+\]
+Thus, $\mathrm{AE}$ corresponds exactly to the agent-side expenditure underlying $\sigma_{\rm act}$, but without diffusion and without $T_0$ scaling.
+Agreement of regime boundaries under $\Delta\sigma$-proxy and $\Delta$AE indicates that the low-inflow sign-flip is not an artifact of the diffusion
+term or normalization.
+
+\paragraph{Explicit cost components (as implemented).}
+Each alive agent pays a baseline maintenance cost per step:
+\[
+q_{\rm maint}^{(a)}(t)=m_0\,dt,\qquad m_0=0.2,
+\]
+so $Q_{\rm maint}(t)=N(t)m_0dt$ with $N(t)$ the number of alive agents.
+
+For informed agents, four-point sensing is performed at a look distance $L$ (\texttt{lookDist}) with noise:
+\[
+\tilde u = u+\eta\xi,\qquad \xi\sim\mathcal N(0,1),\ \eta=\texttt{sensingNoise},
+\]
+and gradient estimates use the sensed differences
+\[
+g_x=\tilde u_{\rm right}-\tilde u_{\rm left},\qquad g_y=\tilde u_{\rm down}-\tilde u_{\rm up}.
+\]
+The informed velocity update is $v\leftarrow v+\alpha(g_x,g_y)dt$ with $\alpha=0.5$ in the implementation.
+The information-processing cost per informed agent is
+\[
+q_{\rm info}^{(a)}(t)=\Bigl(\lambda(|g_x|+|g_y|)+0.2\lambda\Bigr)dt,\qquad \lambda=\texttt{intelligenceCost}.
+\]
+Division events pay a fixed division cost $c_{\rm div}$ (\texttt{divisionCost}) whenever $E\ge E_{\rm div}$ (\texttt{divisionThreshold}).
+
+\paragraph{Uncertainty.}
+All curves are shown with bootstrap confidence intervals (95\% CI).
+
+% -------------------- experimental design & inference --------------------
+\section{Experimental design and inference}
+
+\paragraph{Matched stochastic conditions (paired design).}
+For each inflow value $I$, we run both policies (random and informed) under matched stochastic conditions by using identical seeds for the simulator RNG.
+We use seedbase $=1000$ and $S=50$ seeds: $s\in\{1000,1001,\dots,1049\}$.
+Each seed defines one paired observation of $(\sigma\text{-proxy},\mathrm{AE},\mathrm{RMST})$ for informed and random, and we analyze paired differences
+$\Delta\sigma$-proxy, $\Delta$AE, and $\Delta$RMST.
+
+\paragraph{RMST and bootstrap CI.}
+RMST is computed over a fixed observation window (simulation horizon) using standard restricted mean survival time estimation.
+Confidence intervals for $\Delta$RMST and for energetic differences ($\Delta\sigma$-proxy, $\Delta$AE) are computed by nonparametric bootstrap over the $S=50$
+paired seed-level differences (percentile CI unless otherwise stated in figure generation scripts).
+
+\paragraph{Boundary (zero-crossing) estimation.}
+Regime boundaries are operationally defined as inflow values where the sign of a paired difference changes.
+For visualization, we report point estimates of zero-crossings by linear interpolation between adjacent inflow grid points where the mean curve changes sign:
+\[
+\hat I_0= I_k + (I_{k+1}-I_k)\frac{-\bar y(I_k)}{\bar y(I_{k+1})-\bar y(I_k)}.
+\]
+Primary inference relies on the confidence bands and (when used) bootstrap sign probabilities; boundary locations should be interpreted as statistical transition
+points rather than sharp physical thresholds. In the main text we report rounded boundary values (e.g., $\approx 0.01$, $\approx 0.094$) and provide
+more precise point estimates in close-up figures and/or appendices.
+
+% -------------------- regime definitions --------------------
+\section{Inflow regimes and MEP-validity map}
+We define four inflow regimes using the joint sign structure of $(\Delta \sigma\text{-proxy}, \Delta\mathrm{RMST})$
+and interpret them through an \emph{MEP-validity} lens. Throughout, ``MEP-like'' refers to the empirical alignment
+``higher dissipation proxy accompanies higher persistence advantage'' (both positive), not to a universal physical law.
+
+\begin{itemize}
+  \item \textbf{R0: Trivial low-inflow regime} \\
+  \textbf{Signature:} $\Delta \sigma\text{-proxy} < 0$ and $\Delta\mathrm{RMST} < 0$ (inflow $\approx 0$--$0.01$). \\
+  \textbf{Interpretation:} Informed agents are disfavored and also dissipate less. This is a degenerate limit where gradients are
+  insufficient for functional information use; we treat it as a trivial baseline rather than evidence \emph{for} MEP.
+
+  \item \textbf{R1: failure of the MEP-like association regime I (dissipation without advantage)} \\
+  \textbf{Signature:} $\Delta \sigma\text{-proxy} > 0$ while $\Delta\mathrm{RMST} < 0$ (inflow $\approx 0.01$--$0.095$). \\
+  \textbf{Interpretation:} Dissipation proxy increases under informed behavior without yielding persistence advantage.
+
+  \item \textbf{R2: Bounded MEP-like regime (conditional validity)} \\
+  \textbf{Signature:} $\Delta \sigma\text{-proxy} > 0$ and $\Delta\mathrm{RMST} > 0$ (inflow $\approx 0.095$--$0.16$). \\
+  \textbf{Interpretation:} Dissipation proxy and persistence advantage align, producing a bounded MEP-like window.
+
+  \item \textbf{R3: failure of the MEP-like association regime II (low-dissipation advantage under abundance)} \\
+  \textbf{Signature:} $\Delta \sigma\text{-proxy} < 0$ while $\Delta\mathrm{RMST} > 0$ (inflow $\gtrsim 0.16$). \\
+  \textbf{Interpretation:} Informed agents retain a persistence advantage under fixed strategies while dissipating less than random agents.
+\end{itemize}
+
+We emphasize that these regime boundaries are operational and inferred from sign changes in the inflow scans and close-ups shown below.
+To test robustness against proxy arbitrariness, we additionally examine $\Delta$AE and show that key low-inflow transitions are preserved under this
+alternative, diffusion-free, non-normalized energetic proxy.
+
+% -------------------- results --------------------
+\section{Results}
+
+\subsection{Global inflow scan and regime structure (fixed cost)}
+Figure~\ref{fig:global} shows the global inflow scan at fixed cost ($c=0.2$), exhibiting the full sequence R0--R3 when interpreted by sign structure.
+The figure makes explicit that an MEP-like association emerges only in a bounded inflow window (R2), and fails again outside that window.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/fig1.pdf}
+\caption{
+\textbf{Global inflow scan and MEP-validity map (fixed cost $c=0.2$).}
+Paired differences $\Delta \sigma$-proxy and $\Delta$RMST as functions of inflow.
+Interpreted as an explicit parameter map: R0 (trivial low-inflow baseline), R1 (failure of the MEP-like association: $\Delta\sigma$-proxy$>0$ but $\Delta$RMST$<0$),
+R2 (bounded MEP-like window: both positive), and R3 (failure of the MEP-like association under abundance: $\Delta\sigma$-proxy$<0$ while $\Delta$RMST$>0$).
+}
+\label{fig:global}
+\end{figure}
+
+\subsection{Robustness against proxy arbitrariness: $\Delta$AE as an alternative energetic proxy}
+To address concerns that the diffusion-based term or the $T_0$ normalization could drive the observed low-inflow sign changes in $\Delta\sigma$-proxy,
+we evaluate an independent energetic proxy, $\Delta$AE, which excludes diffusion and does not normalize by $T_0$.
+
+Figure~\ref{fig:AE_global} shows the global behavior of $\Delta$AE (paired informed minus random). Figure~\ref{fig:AE_overlay} provides a compact overlay
+of $\Delta$AE (scaled by a factor 20 for visibility) and $\Delta$RMST. Scaling is purely for visualization and does not affect sign or boundary inference.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/fig2.pdf}
+\caption{
+\textbf{Alternative proxy: global $\Delta$AE vs inflow.}
+$\Delta$AE is the paired difference in agent expenditure (maintenance + information + division) between informed and random strategies.
+Unlike $\Delta\sigma$-proxy, $\Delta$AE excludes the field diffusion term and does not apply $T_0$ normalization.
+The preservation of low-inflow transition structure under $\Delta$AE supports robustness against proxy arbitrariness.
+}
+\label{fig:AE_global}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/fig3.pdf}
+\caption{
+\textbf{Overlay of $\Delta$AE and $\Delta$RMST (visual scaling noted).}
+$\Delta$AE (orange) is multiplied by 20 solely for visibility; $\Delta$RMST is shown in blue with corresponding 95\% CIs.
+The $y=0$ line is shown for reference. Scaling does not affect sign-based regime identification.
+}
+\label{fig:AE_overlay}
+\end{figure}
+
+\subsection{Boundary A: R0 $\rightarrow$ R1 (sign flip of $\Delta\sigma$-proxy near inflow $\sim 0.01$)}
+Figure~\ref{fig:R0R1} resolves the low-inflow transition where $\Delta \sigma$-proxy crosses from negative to positive.
+In this neighborhood, $\Delta$RMST remains negative, marking entry into the first failure-of-association regime (R1).
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig4a.pdf}
+\caption{$\Delta \sigma$-proxy (95\% CI)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig4b.pdf}
+\caption{$\Delta$RMST (95\% CI)}
+\end{subfigure}
+\caption{
+\textbf{Boundary A: R0 $\rightarrow$ R1.}
+Near inflow $\sim 0.01$, $\Delta \sigma$-proxy crosses zero (negative to positive) while $\Delta$RMST remains negative,
+transitioning from R0 to R1 where dissipation proxy increases without conferring persistence advantage.
+Boundary locations are operationally estimated by the zero-crossing of the mean curve (linear interpolation) and supported by the 95\% CI bands.
+}
+\label{fig:R0R1}
+\end{figure}
+
+\subsection{Boundary A under an independent proxy: $\Delta$AE close-up}
+Figure~\ref{fig:AE_R0R1} shows the corresponding low-inflow neighborhood for $\Delta$AE.
+The preservation of the sign flip under $\Delta$AE indicates that the R0$\rightarrow$R1 transition is not an artifact of the diffusion proxy term or $T_0$ normalization.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/fig5.pdf}
+\caption{
+\textbf{Boundary A under an alternative energetic proxy ($\Delta$AE).}
+Close-up view of $\Delta$AE around the low-inflow transition.
+$\Delta$AE excludes diffusion and does not normalize by $T_0$, yet exhibits a consistent low-inflow sign flip.
+This supports robustness of the R0$\rightarrow$R1 boundary against proxy arbitrariness.
+}
+\label{fig:AE_R0R1}
+\end{figure}
+
+\subsection{Boundary B: R1 $\rightarrow$ R2 (onset of survival advantage near inflow $\sim 0.095$)}
+Figure~\ref{fig:R1R2} shows the transition where $\Delta$RMST crosses from negative to positive while $\Delta \sigma$-proxy stays positive.
+This boundary defines onset of the bounded MEP-like window (R2).
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig6a.pdf}
+\caption{$\Delta \sigma$-proxy (95\% CI)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig6b.pdf}
+\caption{$\Delta$RMST (95\% CI)}
+\end{subfigure}
+\caption{
+\textbf{Boundary B: R1 $\rightarrow$ R2.}
+Near inflow $\sim 0.095$, $\Delta$RMST crosses zero while $\Delta \sigma$-proxy remains positive, marking onset of a bounded regime (R2)
+where dissipation proxy and persistence advantage align (MEP-like window).
+}
+\label{fig:R1R2}
+\end{figure}
+
+\subsection{Boundary C: R2 $\rightarrow$ R3 (sign flip of $\Delta\sigma$-proxy near inflow $\sim 0.16$)}
+Figure~\ref{fig:R2R3} shows the high-inflow transition where $\Delta \sigma$-proxy crosses from positive to negative while $\Delta$RMST remains positive.
+This defines the abundant-inflow regime (R3), where informed agents retain a persistence advantage under fixed strategies despite exhibiting a lower dissipation proxy than random agents.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig7a.pdf}
+\caption{$\Delta \sigma$-proxy (95\% CI)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig7b.pdf}
+\caption{$\Delta$RMST (95\% CI)}
+\end{subfigure}
+\caption{
+\textbf{Boundary C: R2 $\rightarrow$ R3.}
+At higher inflow (near $\sim 0.16$), $\Delta \sigma$-proxy transitions from positive to negative while $\Delta$RMST remains positive,
+defining R3: an abundant-inflow regime where informed agents retain a persistence advantage under fixed strategies while dissipating less than random agents.
+}
+\label{fig:R2R3}
+\end{figure}
+
+\subsection{Robustness across information cost}
+Figure~\ref{fig:cost} shows that the inflow-dependent sign/regime structure persists over a wide range of information costs.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig8a.pdf}
+\caption{$\Delta \sigma$-proxy vs inflow (by cost)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig8b.pdf}
+\caption{$\Delta$RMST vs inflow (by cost)}
+\end{subfigure}
+\caption{
+\textbf{Robustness to information-processing cost.}
+Overlay of inflow sweeps across costs shows that the qualitative regime ordering (R0--R3) is preserved. Costs primarily shift amplitudes and
+transition locations without eliminating the bounded MEP-like window and the two regimes of failure of the MEP-like association.
+}
+\label{fig:cost}
+\end{figure}
+
+\subsection{Robustness across stochastic noise}
+Figure~\ref{fig:noise} shows that increased noise attenuates signal magnitude but preserves the overall sign/regime ordering.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig9a.pdf}
+\caption{$\Delta \sigma$-proxy vs inflow (by noise)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\linewidth}
+\includegraphics[width=\linewidth]{figures/fig9b.pdf}
+\caption{$\Delta$RMST vs inflow (by noise)}
+\end{subfigure}
+\caption{
+\textbf{Robustness to noise (fixed cost $c=0.2$).}
+As noise increases, both $\Delta \sigma$-proxy and $\Delta$RMST signals weaken and uncertainty grows, but the qualitative inflow-dependent regime
+structure remains identifiable.
+}
+\label{fig:noise}
+\end{figure}
+
+% -------------------- discussion --------------------
+\section{Discussion}
+
+\subsection{What is new: an explicit parameter map of MEP-like validity and failure}
+The central contribution of this work is an explicit parameter-dependent map showing where an MEP-like
+association appears and where it fails within the same ABM. This reframes the MEP debate from a universal yes/no
+question to a regime-dependent ecological question.
+While regime identification is based on sign structure, the accompanying confidence bands indicate that effect magnitudes vary continuously with inflow,
+highlighting that regime transitions are gradual rather than sharp phase transitions.
+
+\subsection{Proxy meaning, transparency, and robustness}
+We explicitly define $\sigma$-proxy as a sum of (i) a nonnegative diffusion proxy proportional to squared local resource differences and
+(ii) explicit agent expenditures normalized by a temperature scale $T_0$. This definition is fully reproducible from the simulator implementation.
+Importantly, we do not claim $\sigma$-proxy is a thermodynamic entropy production rate. Instead, it is an operational dissipation-related observable that
+aggregates model-defined irreversible throughput at the agent--environment interface.
+
+To defend against concerns that the observed low-inflow transition could be an artifact of proxy design (e.g., inclusion of diffusion or $T_0$ normalization),
+we introduced an independent alternative proxy, agent expenditure (AE), which excludes diffusion and does not normalize by $T_0$.
+The preservation of the low-inflow sign flip under $\Delta$AE provides direct evidence that the R0$\rightarrow$R1 boundary is not driven solely by
+a particular decomposition or scaling choice in $\sigma$-proxy.
+
+\subsection{``Maximum'' versus correlation}
+Our analysis concerns correlation structure, not maximization among steady states. ``MEP-like'' here denotes a bounded inflow window where higher dissipation-related
+proxy co-occurs with higher persistence advantage. We interpret MEP-like behavior as an emergent correlation produced by information--environment coupling,
+not as an optimizing principle of the underlying dynamics.
+
+\subsection{Mechanistic interpretation and limits}
+The two regimes of failure of the MEP-like association are naturally explained by information-dependent feedback:
+dissipation without benefit when gradients are weakly informative, and reduced dissipation advantage when gradients vanish under abundance.
+A limitation is that we do not directly quantify information relevance (e.g., gradient-following accuracy or SNR) in the present figures; adding such
+mechanism-resolving observables is an important next step and would further strengthen causal interpretation.
+
+\subsection{Implications for Artificial Life and extensions}
+Information relevance, not energetic maximization per se, structures persistence advantages in this class of ABMs.
+We focus on fixed-strategy comparisons to isolate informational feedback effects; extending the regime map to evolving populations (mutation/selection)
+is a natural next step. Likewise, exploring alternative field geometries (asymmetry, multiple peaks, time-varying inflow) would clarify which aspects of the
+regime structure are generic versus geometry dependent.
+
+\subsection{Reproducibility}
+To support reproducibility, we will release the simulation code, parameter settings, and the exact outputs used for all figures (including raw and aggregated tables,
+survival tables, and run metadata with seeds) in a versioned public repository with a pinned commit hash upon publication.
+
+\subsection{AI-assisted modeling and epistemic responsibility}
+The present study was conducted in close interaction with large language models (LLMs), which were used to assist in the construction of the simulation code,
+the formulation of experimental designs, and the drafting of the manuscript. The initial motivation and guiding hypothesis---namely, that evolutionary success in open systems
+may be associated with increased rates of entropy production---were provided by the author.
+
+Throughout the project, LLMs were employed as generative tools to explore possible modeling choices and analytical formulations. The author evaluated these suggestions,
+selected among alternatives, and interpreted the resulting behaviors in light of the research questions. All responsibility for the modeling assumptions, experimental settings,
+interpretation of results, and scientific claims rests with the author. The use of AI tools in this work is disclosed to contribute to ongoing discussions about authorship,
+agency, and epistemic responsibility in computational and artificial life research.
+
+% -------------------- conclusion --------------------
+\section{Conclusion}
+We analyzed an ABM comparing random and informed strategies under explicit information-processing cost. By scanning environmental inflow, we identified four
+inflow regimes characterized by the sign structure of $(\Delta\sigma\text{-proxy}, \Delta\mathrm{RMST})$.
+An MEP-like alignment (both positive) appears only in a bounded inflow window, while dissipation-related activity and persistence advantage decouple in two distinct
+failure-of-association regimes. We further introduced an independent alternative energetic proxy, $\Delta$AE, excluding diffusion and $T_0$ normalization, and showed that
+key low-inflow transition structure persists, supporting robustness against proxy arbitrariness.
+These findings indicate that apparent MEP behavior in information-using adaptive systems is best interpreted as a contingent, context-dependent correlation rather than a universal organizing principle.
+
+% -------------------- references --------------------
+\bibliographystyle{plainnat}
+\begin{thebibliography}{9}
+
+\bibitem{landauer1961irreversibility}
+R.~Landauer.
+\newblock Irreversibility and heat generation in the computing process.
+\newblock \emph{IBM Journal of Research and Development}, 5:183--191, 1961.
+
+\bibitem{parrondo2015thermodynamics}
+J.~M.~R. Parrondo, J.~M. Horowitz, and T.~Sagawa.
+\newblock Thermodynamics of information.
+\newblock \emph{Nature Physics}, 11:131--139, 2015.
+
+\bibitem{dewar2003information}
+R.~C. Dewar.
+\newblock Information theory explanation of the fluctuation theorem, maximum entropy production and self-organized criticality.
+\newblock \emph{Journal of Physics A}, 36(3):631--641, 2003.
+
+\bibitem{martyushev2006maxentprod}
+L.~M. Martyushev and V.~D. Seleznev.
+\newblock Maximum entropy production principle in physics, chemistry and biology.
+\newblock \emph{Physics Reports}, 426(1):1--45, 2006.
+
+\end{thebibliography}
+
+\end{document}

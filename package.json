@@ -1,0 +1,14 @@
+{
+  "name": "exp-single-runner",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "exp": "tsx src/runner.ts",
+    "expAE": "tsx src/runnerAE.ts"
+  }
+}
