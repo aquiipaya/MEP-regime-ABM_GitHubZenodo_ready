@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18502569.svg)](https://doi.org/10.5281/zenodo.18502569)
+
 # Regime Mapping of MEP-like Dissipation–Persistence Relations in an Information-Using ABM
 
 This repository contains the full simulation code, data-generation commands, analysis scripts, and figure-generation pipelines used in the paper:
